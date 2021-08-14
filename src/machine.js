@@ -1,4 +1,4 @@
-import { assign, createMachine, send } from 'xstate';
+import { assign, createMachine, send, sendParent } from 'xstate';
 
 import { ROUNDS_PER_GAME } from './constants.js';
 import { select } from './select.js';
@@ -183,10 +183,16 @@ export const machine = createMachine({
                         ]
                     }
                 },
-                over: {}
-            },
-            on: { restart: 'welcome' }
+                over: {
+                    on: {
+                        restart: { actions: send('greet') }
+                    }
+                }
+            }
         }
     },
-    on: { play: 'game' }
+    on: {
+        greet: 'welcome',
+        play: 'game'
+    }
 });
