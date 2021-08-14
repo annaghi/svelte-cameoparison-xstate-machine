@@ -1,4 +1,6 @@
 <script>
+    import Error from './Error.svelte';
+
     import { state, send } from '../useMachine.js';
 
     $: ({ selectedCategory } = $state.context);
@@ -14,28 +16,32 @@
     ];
 </script>
 
-<header>
-    <h1>CameoP<span class="logo">a</span>rison</h1>
-    <p>
-        On <a href="https://cameo.com">cameo.com</a>, you can buy personalised video clips from everyone from Lindsay
-        Lohan to Ice T.
-    </p>
-    <p>But who commands the highest price?</p>
-</header>
+{#if !$state.matches('welcome.error')}
+    <header>
+        <h1>CameoP<span class="logo">a</span>rison</h1>
+        <p>
+            On <a href="https://cameo.com">cameo.com</a>, you can buy personalised video clips from everyone from
+            Lindsay Lohan to Ice T.
+        </p>
+        <p>But who commands the highest price?</p>
+    </header>
 
-<p>Pick a category to play a game:</p>
+    <p>Pick a category to play a game:</p>
 
-<div class="categories">
-    {#each categories as category}
-        <button
-            disabled={$state.matches('welcome.loadingCelebs') || $state.matches('welcome.loadingRounds')}
-            class:selected={selectedCategory === category}
-            on:click={() => send({ type: 'selectCategory', category })}
-        >
-            {category.label}
-        </button>
-    {/each}
-</div>
+    <div class="categories">
+        {#each categories as category}
+            <button
+                disabled={$state.matches('welcome.loadingCelebs') || $state.matches('welcome.loadingRounds')}
+                class:loading={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
+                on:click={() => send({ type: 'selectCategory', category })}
+            >
+                {category.label}
+            </button>
+        {/each}
+    </div>
+{:else if $state.matches('welcome.error')}
+    <Error />
+{/if}
 
 <style>
     h1 {
@@ -74,7 +80,7 @@
     button[disabled] {
         cursor: default;
     }
-    .selected {
+    .loading {
         background: linear-gradient(
             135deg,
             var(--do-something-lighter) 25%,

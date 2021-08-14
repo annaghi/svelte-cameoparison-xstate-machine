@@ -1,15 +1,8 @@
 import { assign, createMachine, send } from 'xstate';
 
+import { ROUNDS_PER_GAME } from './constants.js';
 import { select } from './select.js';
-import { load_image } from './utils.js';
-
-import { inspect } from '@xstate/inspect';
-
-inspect({
-    iframe: false
-});
-
-const ROUNDS_PER_GAME = 10;
+import { loadImage } from './utils.js';
 
 const loadCelebs = async () => {
     const res = await fetch('https://cameo-explorer.netlify.app/celebs.json');
@@ -47,7 +40,7 @@ const loadCelebPair = (round) => {
 const loadCelebDetails = async (celeb) => {
     const res = await fetch(`https://cameo-explorer.netlify.app/celebs/${celeb.id}.json`);
     const details = await res.json();
-    await load_image(details.image);
+    await loadImage(details.image);
     return details;
 };
 
@@ -114,7 +107,7 @@ export const machine = createMachine({
                                     rounds: (context, event) => event.data,
                                     currentRoundIndex: 0
                                 }),
-                                send((context, event) => 'start')
+                                send('play')
                             ]
                         },
                         onError: {
@@ -192,8 +185,8 @@ export const machine = createMachine({
                 },
                 over: {}
             },
-            on: { back: 'welcome' }
+            on: { restart: 'welcome' }
         }
     },
-    on: { start: 'game' }
+    on: { play: 'game' }
 });

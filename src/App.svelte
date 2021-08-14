@@ -1,28 +1,25 @@
 <script>
-    import { onMount } from 'svelte';
-
-    import { load_image } from './utils.js';
-
     import Welcome from './screens/Welcome.svelte';
     import Game from './screens/Game.svelte';
-    import Error from './screens/Error.svelte';
+
+    import { onMount } from 'svelte';
+
+    import { loadImage } from './utils.js';
 
     import { state, send } from './useMachine.js';
 
     onMount(() => {
         send('loadCelebs');
-        load_image('/icons/right.svg');
-        load_image('/icons/wrong.svg');
+        loadImage('/icons/right.svg');
+        loadImage('/icons/wrong.svg');
     });
 </script>
 
 <main>
-    {#if $state.matches('welcome') && !$state.matches('welcome.error')}
+    {#if $state.matches('welcome')}
         <Welcome />
     {:else if $state.matches('game')}
         <Game />
-    {:else if $state.matches('welcome.error')}
-        <Error />
     {/if}
 </main>
 
