@@ -1,15 +1,16 @@
 <script>
     import Card from '../components/Card.svelte';
-    import Over from './Over.svelte';
+    import Feedback from './Feedback.svelte';
+    import Error from '../screens/Error.svelte';
 
     import { fly, crossfade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
 
     import { state, send } from '../useMachine.js';
 
-    $: ({ rounds, currentRoundIndex, results, currentResult } = $state.context);
+    $: ({ currentRound, results, currentResult } = $state.context);
 
-    $: [a, b] = rounds[currentRoundIndex];
+    $: [a, b] = currentRound;
 
     const [sendFade, receiveFade] = crossfade({
         easing: cubicOut,
@@ -17,53 +18,53 @@
     });
 </script>
 
-{#if !$state.matches('game.over')}
+{#if !$state.matches('game.feedback')}
     <header>
         <p>Tap on the more monetisable celebrity's face, or tap 'same price' if society values them equally.</p>
     </header>
 {/if}
 
 <div class="game-container">
-    {#if !$state.matches('game.over')}
-        {#key a.id || b.id}
-            <div in:fly={{ duration: 300, y: 20 }} out:fly={{ duration: 300, y: -20 }} class="game">
-                <div class="card-container">
-                    <Card
-                        celeb={a}
-                        showprice={$state.matches('game.result')}
-                        winner={a.price >= b.price}
-                        on:select={() => send({ type: 'answer', a, b, sign: 1 })}
-                    />
-                </div>
-
-                <div>
-                    <button class="same" on:click={() => send({ type: 'answer', a, b, sign: 0 })}>same price</button>
-                </div>
-
-                <div class="card-container">
-                    <Card
-                        celeb={b}
-                        showprice={$state.matches('game.result')}
-                        winner={b.price >= a.price}
-                        on:select={() => send({ type: 'answer', a, b, sign: -1 })}
-                    />
-                </div>
+    {#if $state.matches('game.question') || $state.matches('game.answer') || $state.matches('game.next')}
+        <div in:fly={{ duration: 300, y: 50 }} out:fly={{ duration: 300, y: -50 }} class="game">
+            <div class="card-container">
+                <Card
+                    celeb={a}
+                    showprice={$state.matches('game.answer')}
+                    winner={a.price >= b.price}
+                    on:select={() => send({ type: 'attempt', a, b, sign: 1 })}
+                />
             </div>
-        {/key}
-    {:else if $state.matches('game.over')}
-        <Over />
+
+            <div>
+                <button class="same" on:click={() => send({ type: 'attempt', a, b, sign: 0 })}>same price</button>
+            </div>
+
+            <div class="card-container">
+                <Card
+                    celeb={b}
+                    showprice={$state.matches('game.answer')}
+                    winner={b.price >= a.price}
+                    on:select={() => send({ type: 'attempt', a, b, sign: -1 })}
+                />
+            </div>
+        </div>
+
+        {#if $state.matches('game.answer')}
+            <img
+                in:fly={{ duration: 200, y: -100 }}
+                out:sendFade={{ key: currentResult }}
+                class="giant-result"
+                alt="{currentResult} answer"
+                src="/icons/{currentResult}.svg"
+            />
+        {/if}
+    {:else if $state.matches('game.feedback')}
+        <Feedback />
+    {:else if $state.matches('game.error')}
+        <Error />
     {/if}
 </div>
-
-{#if $state.matches('game.result')}
-    <img
-        in:fly={{ duration: 200, x: 100 }}
-        out:sendFade={{ key: currentResult }}
-        class="giant-result"
-        alt="{currentResult} answer"
-        src="/icons/{currentResult}.svg"
-    />
-{/if}
 
 <div class="results" style="grid-template-columns: repeat({results.length}, 1fr)">
     {#each results as result}

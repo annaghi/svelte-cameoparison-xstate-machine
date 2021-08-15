@@ -1,4 +1,4 @@
-import { assign, createMachine, send, sendParent } from 'xstate';
+import { assign, createMachine, send } from 'xstate';
 
 import { ROUNDS_PER_GAME } from './constants.js';
 import { select } from './select.js';
@@ -29,13 +29,8 @@ const loadCelebs = async () => {
     };
 };
 
-const loadRounds = (selection) => {
-    return Promise.all(selection.map((round) => loadCelebPair(round)));
-};
-
-const loadCelebPair = (round) => {
-    return Promise.all([loadCelebDetails(round.a), loadCelebDetails(round.b)]);
-};
+const loadRounds = async (selection) =>
+    selection.map((round) => Promise.all([loadCelebDetails(round.a), loadCelebDetails(round.b)]));
 
 const loadCelebDetails = async (celeb) => {
     const res = await fetch(`https://cameo-explorer.netlify.app/celebs/${celeb.id}.json`);
@@ -47,6 +42,7 @@ const loadCelebDetails = async (celeb) => {
 const initialGameContext = {
     selectedCategory: undefined,
     rounds: [],
+    currentRound: [],
     currentRoundIndex: -1,
     results: Array(ROUNDS_PER_GAME),
     currentResult: undefined
@@ -71,7 +67,7 @@ export const machine = createMachine({
                     on: {
                         loadCelebs: 'loadingCelebs',
                         selectCategory: {
-                            cond: (context, event) => context.celebs.length > 0 && context.lookup,
+                            cond: (context, event) => context.celebs.length > 0 && context?.lookup,
                             target: 'loadingRounds',
                             actions: assign({
                                 selectedCategory: (context, event) => event.category
@@ -90,7 +86,7 @@ export const machine = createMachine({
                             })
                         },
                         onError: {
-                            target: 'error',
+                            target: 'failure',
                             actions: assign({ targetState: 'loadingCelebs' })
                         }
                     }
@@ -111,13 +107,13 @@ export const machine = createMachine({
                             ]
                         },
                         onError: {
-                            target: 'error',
+                            target: 'failure',
                             actions: assign({ targetState: 'idle' })
                         }
                     }
                 },
 
-                error: {
+                failure: {
                     on: {
                         retry: [
                             {
@@ -131,23 +127,30 @@ export const machine = createMachine({
                         ]
                     }
                 }
-                // error: {
-                //     on: {
-                //         retry: {
-                //             target: (context, event) => context.targetState
-                //         }
-                //     }
-                // }
             }
         },
 
         game: {
-            initial: 'question',
+            initial: 'loadingRound',
             states: {
+                loadingRound: {
+                    invoke: {
+                        src: (context, event) => context.rounds[context.currentRoundIndex].then((round) => round),
+                        onDone: {
+                            target: 'question',
+                            actions: [
+                                assign({
+                                    currentRound: (context, event) => event.data
+                                })
+                            ]
+                        },
+                        onError: 'failure'
+                    }
+                },
                 question: {
                     on: {
-                        answer: {
-                            target: 'result',
+                        attempt: {
+                            target: 'answer',
                             actions: assign({
                                 currentResult: (context, event) =>
                                     Math.sign(event.a.price - event.b.price) === event.sign ? 'right' : 'wrong'
@@ -155,7 +158,7 @@ export const machine = createMachine({
                         }
                     }
                 },
-                result: {
+                answer: {
                     after: {
                         1500: {
                             target: 'next',
@@ -174,25 +177,35 @@ export const machine = createMachine({
                         500: [
                             {
                                 cond: (context, event) => context.currentRoundIndex < ROUNDS_PER_GAME - 1,
-                                target: 'question',
+                                target: 'loadingRound',
                                 actions: assign({
                                     currentRoundIndex: (context, event) => context.currentRoundIndex + 1
                                 })
                             },
-                            { target: 'over' }
+                            {
+                                target: 'feedback'
+                            }
                         ]
                     }
                 },
-                over: {
+                feedback: {
                     on: {
                         restart: { actions: send('greet') }
+                    }
+                },
+
+                failure: {
+                    on: {
+                        retry: { actions: send('error') }
                     }
                 }
             }
         }
     },
+
     on: {
         greet: 'welcome',
-        play: 'game'
+        play: 'game',
+        error: 'welcome'
     }
 });

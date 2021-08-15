@@ -1,5 +1,5 @@
 <script>
-    import Error from './Error.svelte';
+    import Error from '../screens/Error.svelte';
 
     import { state, send } from '../useMachine.js';
 
@@ -31,7 +31,7 @@
     <div class="categories">
         {#each categories as category}
             <button
-                disabled={$state.matches('welcome.loadingCelebs') || $state.matches('welcome.loadingRounds')}
+                disabled={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
                 class:loading={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
                 on:click={() => send({ type: 'selectCategory', category })}
             >
