@@ -16,7 +16,7 @@
     ];
 </script>
 
-{#if !$state.matches('welcome.error')}
+{#if !$state.matches('welcome.failure')}
     <header>
         <h1>CameoP<span class="logo">a</span>rison</h1>
         <p>
@@ -33,13 +33,13 @@
             <button
                 disabled={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
                 class:loading={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
-                on:click={() => send({ type: 'selectCategory', category })}
+                on:click={() => send({ type: 'SELECT_CATEGORY', category })}
             >
                 {category.label}
             </button>
         {/each}
     </div>
-{:else if $state.matches('welcome.error')}
+{:else if $state.matches('welcome.failure')}
     <Error />
 {/if}
 

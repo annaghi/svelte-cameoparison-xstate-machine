@@ -65,8 +65,8 @@ export const machine = createMachine({
                 idle: {
                     entry: assign(initialGameContext),
                     on: {
-                        loadCelebs: 'loadingCelebs',
-                        selectCategory: {
+                        LOAD_CELEBS: 'loadingCelebs',
+                        SELECT_CATEGORY: {
                             cond: (context, event) => context.celebs.length > 0 && context?.lookup,
                             target: 'loadingRounds',
                             actions: assign({
@@ -103,7 +103,7 @@ export const machine = createMachine({
                                     rounds: (context, event) => event.data,
                                     currentRoundIndex: 0
                                 }),
-                                send('play')
+                                send('PLAY')
                             ]
                         },
                         onError: {
@@ -115,7 +115,7 @@ export const machine = createMachine({
 
                 failure: {
                     on: {
-                        retry: [
+                        RETRY: [
                             {
                                 cond: (context, event) => context.targetState === 'loadingCelebs',
                                 target: 'loadingCelebs'
@@ -138,18 +138,14 @@ export const machine = createMachine({
                         src: (context, event) => context.rounds[context.currentRoundIndex].then((round) => round),
                         onDone: {
                             target: 'question',
-                            actions: [
-                                assign({
-                                    currentRound: (context, event) => event.data
-                                })
-                            ]
+                            actions: assign({ currentRound: (context, event) => event.data })
                         },
                         onError: 'failure'
                     }
                 },
                 question: {
                     on: {
-                        attempt: {
+                        ATTEMPT: {
                             target: 'answer',
                             actions: assign({
                                 currentResult: (context, event) =>
@@ -160,7 +156,7 @@ export const machine = createMachine({
                 },
                 answer: {
                     after: {
-                        1500: {
+                        500: {
                             target: 'next',
                             actions: assign({
                                 results: (context, event) => [
@@ -190,13 +186,13 @@ export const machine = createMachine({
                 },
                 feedback: {
                     on: {
-                        restart: { actions: send('greet') }
+                        RESTART: { actions: send('GREET') }
                     }
                 },
 
                 failure: {
                     on: {
-                        retry: { actions: send('error') }
+                        RETRY: { actions: send('ERROR') }
                     }
                 }
             }
@@ -204,8 +200,8 @@ export const machine = createMachine({
     },
 
     on: {
-        greet: 'welcome',
-        play: 'game',
-        error: 'welcome'
+        GREET: 'welcome',
+        PLAY: 'game',
+        ERROR: 'welcome'
     }
 });

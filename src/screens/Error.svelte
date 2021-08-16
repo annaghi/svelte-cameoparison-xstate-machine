@@ -4,7 +4,7 @@
 
 <div class="error">
     <p class="message">Server or network error</p>
-    <button on:click={() => send('retry')}>Try again</button>
+    <button on:click={() => send('RETRY')}>Try again</button>
 </div>
 
 <style>

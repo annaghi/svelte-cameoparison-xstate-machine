@@ -9,7 +9,7 @@
     import { state, send } from './useMachine.js';
 
     onMount(() => {
-        send('loadCelebs');
+        send('LOAD_CELEBS');
         loadImage('/icons/right.svg');
         loadImage('/icons/wrong.svg');
     });

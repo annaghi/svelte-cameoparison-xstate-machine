@@ -32,12 +32,12 @@
                     celeb={a}
                     showprice={$state.matches('game.answer')}
                     winner={a.price >= b.price}
-                    on:select={() => send({ type: 'attempt', a, b, sign: 1 })}
+                    on:select={() => send({ type: 'ATTEMPT', a, b, sign: 1 })}
                 />
             </div>
 
             <div>
-                <button class="same" on:click={() => send({ type: 'attempt', a, b, sign: 0 })}>same price</button>
+                <button class="same" on:click={() => send({ type: 'ATTEMPT', a, b, sign: 0 })}>same price</button>
             </div>
 
             <div class="card-container">
@@ -45,7 +45,7 @@
                     celeb={b}
                     showprice={$state.matches('game.answer')}
                     winner={b.price >= a.price}
-                    on:select={() => send({ type: 'attempt', a, b, sign: -1 })}
+                    on:select={() => send({ type: 'ATTEMPT', a, b, sign: -1 })}
                 />
             </div>
         </div>
@@ -61,7 +61,7 @@
         {/if}
     {:else if $state.matches('game.feedback')}
         <Feedback />
-    {:else if $state.matches('game.error')}
+    {:else if $state.matches('game.failure')}
         <Error />
     {/if}
 </div>
