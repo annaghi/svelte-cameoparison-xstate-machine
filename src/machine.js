@@ -53,7 +53,6 @@ export const machine = createMachine({
         celebs: [],
         lookup: undefined,
         selectedCategory: undefined,
-        targetState: undefined,
         ...initialGameContext
     },
 
@@ -67,10 +66,10 @@ export const machine = createMachine({
                         LOAD_CELEBS: 'loadingCelebs',
                         SELECT_CATEGORY: {
                             cond: (context, event) => context.celebs.length > 0 && context?.lookup,
-                            target: 'loadingRounds',
-                            actions: assign({
-                                selectedCategory: (context, event) => event.category
-                            })
+                            actions: [
+                                send({ type: 'PLAY' }),
+                                assign({ selectedCategory: (context, event) => event.category })
+                            ]
                         }
                     }
                 },
@@ -85,9 +84,24 @@ export const machine = createMachine({
                             })
                         },
                         onError: {
-                            target: 'failure',
-                            actions: assign({ targetState: 'loadingCelebs' })
+                            target: 'failure'
                         }
+                    }
+                },
+                failure: {
+                    on: {
+                        RETRY: 'loadingCelebs'
+                    }
+                }
+            }
+        },
+
+        game: {
+            initial: 'idle',
+            states: {
+                idle: {
+                    on: {
+                        LOAD_ROUNDS: 'loadingRounds'
                     }
                 },
                 loadingRounds: {
@@ -98,36 +112,12 @@ export const machine = createMachine({
                                 select(context.celebs, context.lookup, context.selectedCategory.slug, ROUNDS_PER_GAME)
                             ),
                         onDone: {
-                            target: 'idle',
-                            actions: [assign({ rounds: (context, event) => event.data }), send('PLAY')]
+                            target: 'loadingRound',
+                            actions: assign({ rounds: (context, event) => event.data })
                         },
-                        onError: {
-                            target: 'failure',
-                            actions: assign({ targetState: 'idle' })
-                        }
+                        onError: 'failure'
                     }
                 },
-
-                failure: {
-                    on: {
-                        RETRY: [
-                            {
-                                cond: (context, event) => context.targetState === 'loadingCelebs',
-                                target: 'loadingCelebs'
-                            },
-                            {
-                                cond: (context, event) => context.targetState === 'idle',
-                                target: 'idle'
-                            }
-                        ]
-                    }
-                }
-            }
-        },
-
-        game: {
-            initial: 'loadingRound',
-            states: {
                 loadingRound: {
                     invoke: {
                         src: (context, event) => context.rounds[context.currentRoundIndex].then((round) => round),
@@ -184,7 +174,6 @@ export const machine = createMachine({
                         RESTART: { actions: send('GREET') }
                     }
                 },
-
                 failure: {
                     on: {
                         RETRY: { actions: send('ERROR') }
