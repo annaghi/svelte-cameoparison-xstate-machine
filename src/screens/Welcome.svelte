@@ -1,9 +1,7 @@
 <script>
     import Error from '../screens/Error.svelte';
 
-    import { state, send } from '../useMachine.js';
-
-    $: ({ selectedCategory } = $state.context);
+    import { state, send } from '../store.js';
 
     const categories = [
         { slug: 'actors', label: 'Actors' },
@@ -31,8 +29,8 @@
     <div class="categories">
         {#each categories as category}
             <button
-                disabled={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
-                class:loading={$state.matches('welcome.loadingCelebs') || selectedCategory === category}
+                disabled={$state.matches('welcome.loadingCelebs')}
+                class:loading={$state.matches('welcome.loadingCelebs')}
                 on:click={() => send({ type: 'SELECT_CATEGORY', category })}
             >
                 {category.label}

@@ -4,7 +4,7 @@
 
     import { pickRandom } from '../utils.js';
 
-    import { state, send } from '../useMachine.js';
+    import { state, send } from '../store.js';
 
     $: ({ results } = $state.context);
 

@@ -40,10 +40,9 @@ const loadCelebDetails = async (celeb) => {
 };
 
 const initialGameContext = {
-    selectedCategory: undefined,
     rounds: [],
     currentRound: [],
-    currentRoundIndex: -1,
+    currentRoundIndex: 0,
     results: Array(ROUNDS_PER_GAME),
     currentResult: undefined
 };
@@ -53,6 +52,7 @@ export const machine = createMachine({
     context: {
         celebs: [],
         lookup: undefined,
+        selectedCategory: undefined,
         targetState: undefined,
         ...initialGameContext
     },
@@ -63,7 +63,6 @@ export const machine = createMachine({
             initial: 'idle',
             states: {
                 idle: {
-                    entry: assign(initialGameContext),
                     on: {
                         LOAD_CELEBS: 'loadingCelebs',
                         SELECT_CATEGORY: {
@@ -92,19 +91,15 @@ export const machine = createMachine({
                     }
                 },
                 loadingRounds: {
+                    entry: assign(initialGameContext),
                     invoke: {
                         src: (context, event) =>
                             loadRounds(
                                 select(context.celebs, context.lookup, context.selectedCategory.slug, ROUNDS_PER_GAME)
                             ),
                         onDone: {
-                            actions: [
-                                assign({
-                                    rounds: (context, event) => event.data,
-                                    currentRoundIndex: 0
-                                }),
-                                send('PLAY')
-                            ]
+                            target: 'idle',
+                            actions: [assign({ rounds: (context, event) => event.data }), send('PLAY')]
                         },
                         onError: {
                             target: 'failure',
@@ -156,7 +151,7 @@ export const machine = createMachine({
                 },
                 answer: {
                     after: {
-                        500: {
+                        1500: {
                             target: 'next',
                             actions: assign({
                                 results: (context, event) => [

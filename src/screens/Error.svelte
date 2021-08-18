@@ -1,5 +1,5 @@
 <script>
-    import { send } from '../useMachine.js';
+    import { send } from '../store.js';
 </script>
 
 <div class="error">

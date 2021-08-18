@@ -6,7 +6,7 @@
     import { fly, crossfade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
 
-    import { state, send } from '../useMachine.js';
+    import { state, send } from '../store.js';
 
     $: ({ currentRound, results, currentResult } = $state.context);
 

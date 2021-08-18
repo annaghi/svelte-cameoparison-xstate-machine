@@ -6,7 +6,7 @@
 
     import { loadImage } from './utils.js';
 
-    import { state, send } from './useMachine.js';
+    import { state, send } from './store.js';
 
     onMount(() => {
         send('LOAD_CELEBS');
