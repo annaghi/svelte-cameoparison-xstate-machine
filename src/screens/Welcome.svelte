@@ -1,7 +1,7 @@
 <script>
     import Error from '../screens/Error.svelte';
 
-    import { state, send } from '../store.js';
+    import { service } from '../service.js';
 
     const categories = [
         { slug: 'actors', label: 'Actors' },
@@ -14,32 +14,34 @@
     ];
 </script>
 
-{#if !$state.matches('welcome.failure')}
-    <header>
-        <h1>CameoP<span class="logo">a</span>rison</h1>
-        <p>
-            On <a href="https://cameo.com">cameo.com</a>, you can buy personalised video clips from everyone from
-            Lindsay Lohan to Ice T.
-        </p>
-        <p>But who commands the highest price?</p>
-    </header>
-
-    <p>Pick a category to play a game:</p>
-
-    <div class="categories">
-        {#each categories as category}
-            <button
-                disabled={$state.matches('welcome.loadingCelebs')}
-                class:loading={$state.matches('welcome.loadingCelebs')}
-                on:click={() => send({ type: 'SELECT_CATEGORY', category })}
-            >
-                {category.label}
-            </button>
-        {/each}
+{#if $service.matches('welcome.failure')}
+    <div class="error-container">
+        <Error />
     </div>
-{:else if $state.matches('welcome.failure')}
-    <Error />
 {/if}
+
+<header>
+    <h1>CameoP<span class="logo">a</span>rison</h1>
+    <p>
+        On <a href="https://cameo.com">cameo.com</a>, you can buy personalised video clips from everyone from Lindsay
+        Lohan to Ice T.
+    </p>
+    <p>But who commands the highest price?</p>
+</header>
+
+<p>Pick a category to play a game:</p>
+
+<div class="categories">
+    {#each categories as category}
+        <button
+            disabled={$service.matches('welcome.loadingCelebs') || $service.matches('welcome.failure')}
+            class:loading={$service.matches('welcome.loadingCelebs')}
+            on:click={() => service.send({ type: 'SELECT_CATEGORY', category })}
+        >
+            {category.label}
+        </button>
+    {/each}
+</div>
 
 <style>
     h1 {
@@ -77,6 +79,8 @@
     }
     button[disabled] {
         cursor: default;
+        background-color: #888;
+        color: #444;
     }
     .loading {
         background: linear-gradient(
@@ -90,6 +94,12 @@
         );
         animation: bar-animation 3s linear infinite;
         background-size: 64px 64px;
+    }
+    .error-container {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0);
     }
     @keyframes bar-animation {
         0% {

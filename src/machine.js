@@ -52,7 +52,7 @@ export const machine = createMachine({
     context: {
         celebs: [],
         lookup: undefined,
-        selectedCategory: undefined,
+        category: undefined,
         ...initialGameContext
     },
 
@@ -66,10 +66,7 @@ export const machine = createMachine({
                         LOAD_CELEBS: 'loadingCelebs',
                         SELECT_CATEGORY: {
                             cond: (context, event) => context.celebs.length > 0 && context?.lookup,
-                            actions: [
-                                send({ type: 'PLAY' }),
-                                assign({ selectedCategory: (context, event) => event.category })
-                            ]
+                            actions: [assign({ category: (context, event) => event.category }), send({ type: 'PLAY' })]
                         }
                     }
                 },
@@ -83,9 +80,7 @@ export const machine = createMachine({
                                 lookup: (context, event) => event.data.lookup
                             })
                         },
-                        onError: {
-                            target: 'failure'
-                        }
+                        onError: 'failure'
                     }
                 },
                 failure: {
@@ -100,25 +95,22 @@ export const machine = createMachine({
             initial: 'idle',
             states: {
                 idle: {
+                    entry: assign(initialGameContext),
                     on: {
                         LOAD_ROUNDS: 'loadingRounds'
                     }
                 },
                 loadingRounds: {
-                    entry: assign(initialGameContext),
                     invoke: {
                         src: (context, event) =>
-                            loadRounds(
-                                select(context.celebs, context.lookup, context.selectedCategory.slug, ROUNDS_PER_GAME)
-                            ),
+                            loadRounds(select(context.celebs, context.lookup, context.category.slug, ROUNDS_PER_GAME)),
                         onDone: {
-                            target: 'loadingRound',
+                            target: 'loadingCelebDetails',
                             actions: assign({ rounds: (context, event) => event.data })
-                        },
-                        onError: 'failure'
+                        }
                     }
                 },
-                loadingRound: {
+                loadingCelebDetails: {
                     invoke: {
                         src: (context, event) => context.rounds[context.currentRoundIndex].then((round) => round),
                         onDone: {
@@ -158,7 +150,7 @@ export const machine = createMachine({
                         500: [
                             {
                                 cond: (context, event) => context.currentRoundIndex < ROUNDS_PER_GAME - 1,
-                                target: 'loadingRound',
+                                target: 'loadingCelebDetails',
                                 actions: assign({
                                     currentRoundIndex: (context, event) => context.currentRoundIndex + 1
                                 })
@@ -171,12 +163,14 @@ export const machine = createMachine({
                 },
                 feedback: {
                     on: {
-                        RESTART: { actions: send('GREET') }
+                        RESTART: {
+                            actions: send('GREET')
+                        }
                     }
                 },
                 failure: {
                     on: {
-                        RETRY: { actions: send('ERROR') }
+                        RETRY: 'loadingRounds'
                     }
                 }
             }
@@ -185,7 +179,6 @@ export const machine = createMachine({
 
     on: {
         GREET: 'welcome',
-        PLAY: 'game',
-        ERROR: 'welcome'
+        PLAY: 'game'
     }
 });

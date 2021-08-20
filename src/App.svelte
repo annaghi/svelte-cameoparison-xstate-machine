@@ -2,23 +2,27 @@
     import Welcome from './screens/Welcome.svelte';
     import Game from './screens/Game.svelte';
 
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
 
     import { loadImage } from './utils.js';
 
-    import { state, send } from './store.js';
+    import { service } from './service.js';
 
     onMount(() => {
-        send('LOAD_CELEBS');
+        service.send('LOAD_CELEBS');
         loadImage('/icons/right.svg');
         loadImage('/icons/wrong.svg');
+    });
+
+    onDestroy(() => {
+        service.stop();
     });
 </script>
 
 <main>
-    {#if $state.matches('welcome')}
+    {#if $service.matches('welcome')}
         <Welcome />
-    {:else if $state.matches('game')}
+    {:else if $service.matches('game')}
         <Game />
     {/if}
 </main>

@@ -4,9 +4,9 @@
 
     import { pickRandom } from '../utils.js';
 
-    import { state, send } from '../store.js';
+    import { service } from '../service.js';
 
-    $: ({ results } = $state.context);
+    $: ({ results } = $service.context);
 
     $: score = results.filter((x) => x === 'right').length;
 
@@ -30,7 +30,7 @@
 <div class="done" in:scale={{ delay: 200, duration: 800, easing: elasticOut }}>
     <strong>{score}/{results.length}</strong>
     <p>{pickMessage(score / results.length)}</p>
-    <button on:click={() => send('RESTART')}>Back to main screen</button>
+    <button on:click={() => service.send('RESTART')}>Back to main screen</button>
 </div>
 
 <style>

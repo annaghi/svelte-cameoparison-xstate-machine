@@ -7,9 +7,9 @@
     import { fly, crossfade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
 
-    import { state, send } from '../store.js';
+    import { service } from '../service.js';
 
-    $: ({ currentRound, results, currentResult } = $state.context);
+    $: ({ currentRound, results, currentResult } = $service.context);
 
     $: [a, b] = currentRound;
 
@@ -19,43 +19,45 @@
     });
 
     onMount(() => {
-        send('LOAD_ROUNDS');
+        service.send('LOAD_ROUNDS');
     });
 </script>
 
-{#if !$state.matches('game.feedback')}
+{#if !$service.matches('game.feedback')}
     <header>
         <p>Tap on the more monetisable celebrity's face, or tap 'same price' if society values them equally.</p>
     </header>
 {/if}
 
 <div class="game-container">
-    {#if $state.matches('game.question') || $state.matches('game.answer') || $state.matches('game.next')}
-        <div in:fly={{ duration: 300, y: 50 }} out:fly={{ duration: 300, y: -50 }} class="game">
+    {#if $service.matches('game.question') || $service.matches('game.answer') || $service.matches('game.next')}
+        <div in:fly={{ duration: 300, y: 20 }} out:fly={{ duration: 300, y: -20 }} class="game">
             <div class="card-container">
                 <Card
                     celeb={a}
-                    showprice={$state.matches('game.answer')}
+                    showprice={$service.matches('game.answer')}
                     winner={a.price >= b.price}
-                    on:select={() => send({ type: 'ATTEMPT', a, b, sign: 1 })}
+                    on:select={() => service.send({ type: 'ATTEMPT', a, b, sign: 1 })}
                 />
             </div>
 
             <div>
-                <button class="same" on:click={() => send({ type: 'ATTEMPT', a, b, sign: 0 })}>same price</button>
+                <button class="same" on:click={() => service.send({ type: 'ATTEMPT', a, b, sign: 0 })}
+                    >same price</button
+                >
             </div>
 
             <div class="card-container">
                 <Card
                     celeb={b}
-                    showprice={$state.matches('game.answer')}
+                    showprice={$service.matches('game.answer')}
                     winner={b.price >= a.price}
-                    on:select={() => send({ type: 'ATTEMPT', a, b, sign: -1 })}
+                    on:select={() => service.send({ type: 'ATTEMPT', a, b, sign: -1 })}
                 />
             </div>
         </div>
 
-        {#if $state.matches('game.answer')}
+        {#if $service.matches('game.answer')}
             <img
                 in:fly={{ duration: 200, y: -100 }}
                 out:sendFade={{ key: currentResult }}
@@ -64,10 +66,12 @@
                 src="/icons/{currentResult}.svg"
             />
         {/if}
-    {:else if $state.matches('game.feedback')}
+    {:else if $service.matches('game.feedback')}
         <Feedback />
-    {:else if $state.matches('game.failure')}
-        <Error />
+    {:else if $service.matches('game.failure')}
+        <div class="error-container">
+            <Error />
+        </div>
     {/if}
 </div>
 
@@ -137,6 +141,14 @@
         height: 100%;
         left: 0;
         top: 0;
+    }
+    .error-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     @media (min-width: 640px) {
         .game {
