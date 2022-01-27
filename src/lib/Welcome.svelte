@@ -1,5 +1,5 @@
 <script>
-    import Error from '../screens/Error.svelte';
+    import Error from './Error.svelte';
 
     import { service } from '../service.js';
 
@@ -34,7 +34,7 @@
 <div class="categories">
     {#each categories as category}
         <button
-            disabled={$service.matches('welcome.loadingCelebs') || $service.matches('welcome.failure')}
+            disabled={!$service.matches('welcome.categories')}
             class:loading={$service.matches('welcome.loadingCelebs')}
             on:click={() => service.send({ type: 'SELECT_CATEGORY', category })}
         >

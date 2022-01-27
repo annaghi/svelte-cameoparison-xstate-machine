@@ -1,25 +1,19 @@
 <script>
-    import Card from '../components/Card.svelte';
+    import Card from './Card.svelte';
     import Feedback from './Feedback.svelte';
-    import Error from '../screens/Error.svelte';
+    import Error from './Error.svelte';
 
-    import { onMount } from 'svelte';
     import { fly, crossfade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
 
     import { service } from '../service.js';
 
     $: ({ currentRound, results, currentResult } = $service.context);
-
     $: [a, b] = currentRound;
 
     const [sendFade, receiveFade] = crossfade({
         easing: cubicOut,
         duration: 300
-    });
-
-    onMount(() => {
-        service.send('LOAD_ROUNDS');
     });
 </script>
 

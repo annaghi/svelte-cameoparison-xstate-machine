@@ -3,8 +3,8 @@ import { interpret } from 'xstate';
 
 import { machine } from './machine.js';
 
-// inspect({
-//     iframe: false
-// });
+inspect({
+    iframe: false
+});
 
 export const service = interpret(machine, { devTools: true }).start();

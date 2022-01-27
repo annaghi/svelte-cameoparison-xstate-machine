@@ -3,11 +3,9 @@
     import { elasticOut } from 'svelte/easing';
 
     import { pickRandom } from '../utils.js';
-
     import { service } from '../service.js';
 
     $: ({ results } = $service.context);
-
     $: score = results.filter((x) => x === 'right').length;
 
     const pickMessage = (p) => {

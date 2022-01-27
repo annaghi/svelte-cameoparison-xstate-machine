@@ -1,15 +1,12 @@
 <script>
-    import Welcome from './screens/Welcome.svelte';
-    import Game from './screens/Game.svelte';
+    import Welcome from './lib/Welcome.svelte';
+    import Game from './lib/Game.svelte';
 
     import { onMount, onDestroy } from 'svelte';
-
     import { loadImage } from './utils.js';
-
     import { service } from './service.js';
 
     onMount(() => {
-        service.send('LOAD_CELEBS');
         loadImage('/icons/right.svg');
         loadImage('/icons/wrong.svg');
     });
