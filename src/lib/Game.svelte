@@ -1,7 +1,6 @@
 <script>
     import Card from './Card.svelte';
     import Feedback from './Feedback.svelte';
-    import Error from './Error.svelte';
 
     import { fly, crossfade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
@@ -62,10 +61,6 @@
         {/if}
     {:else if $service.matches('game.feedback')}
         <Feedback />
-    {:else if $service.matches('game.failure')}
-        <div class="error-container">
-            <Error />
-        </div>
     {/if}
 </div>
 

@@ -109,7 +109,7 @@ export const machine = createMachine({
                             target: 'question',
                             actions: assign({ currentRound: (context, event) => event.data })
                         },
-                        onError: 'failure'
+                        onError: 'healingRounds'
                     }
                 },
                 healingRounds: {
@@ -176,11 +176,6 @@ export const machine = createMachine({
                         }
                     },
                     exit: assign(initialGameContext)
-                },
-                failure: {
-                    on: {
-                        RETRY: 'healingRounds'
-                    }
                 }
             }
         }
