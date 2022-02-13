@@ -1,5 +1,6 @@
 <script>
     import Card from './Card.svelte';
+    import CardSkeleton from './CardSkeleton.svelte';
     import Feedback from './Feedback.svelte';
 
     import { fly, crossfade } from 'svelte/transition';
@@ -61,6 +62,20 @@
         {/if}
     {:else if $service.matches('game.feedback')}
         <Feedback />
+    {:else}
+        <div class="game">
+            <div class="card-container">
+                <CardSkeleton />
+            </div>
+
+            <div>
+                <button class="same" disabled />
+            </div>
+
+            <div class="card-container">
+                <CardSkeleton />
+            </div>
+        </div>
     {/if}
 </div>
 
@@ -96,6 +111,11 @@
         align-items: center;
         margin: 0;
     }
+
+    .same:disabled {
+        background-color: #888;
+    }
+
     .game .card-container button {
         width: 100%;
         height: 100%;
@@ -131,14 +151,7 @@
         left: 0;
         top: 0;
     }
-    .error-container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
+
     @media (min-width: 640px) {
         .game {
             max-width: 100%;
