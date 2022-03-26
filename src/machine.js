@@ -71,7 +71,7 @@ export const machine = createMachine({
                                 lookup: (context, event) => event.data.lookup
                             })
                         },
-                        onError: 'failure'
+                        onError: { target: 'failure' }
                     }
                 },
                 categories: {
@@ -83,7 +83,7 @@ export const machine = createMachine({
                 },
                 failure: {
                     on: {
-                        RETRY: 'loadingCelebs'
+                        RETRY: { target: 'loadingCelebs' }
                     }
                 }
             }
@@ -109,7 +109,7 @@ export const machine = createMachine({
                             target: 'question',
                             actions: assign({ currentRound: (context, event) => event.data })
                         },
-                        onError: 'healingRounds'
+                        onError: { target: 'healingRounds' }
                     }
                 },
                 healingRounds: {
