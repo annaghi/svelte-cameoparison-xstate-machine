@@ -93,6 +93,7 @@ export const machine = createMachine({
             initial: 'loadingRounds',
             states: {
                 loadingRounds: {
+                    entry: assign(initialGameContext),
                     invoke: {
                         src: (context, event) =>
                             loadRounds(select(context.celebs, context.lookup, context.category.slug, ROUNDS_PER_GAME)),
@@ -174,8 +175,7 @@ export const machine = createMachine({
                         RESTART: {
                             actions: send('GREET')
                         }
-                    },
-                    exit: assign(initialGameContext)
+                    }
                 }
             }
         }
